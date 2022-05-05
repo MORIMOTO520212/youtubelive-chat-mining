@@ -109,6 +109,7 @@ async function main(videoId, continuation_key){
             }catch{}
         });
         node_words = update_words();
+        draw();
     }
 
     /* チャットのキューを100に制限する */
