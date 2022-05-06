@@ -35,13 +35,16 @@ function get_chat(videoId, continuation_key){
     });
 }
 
-function morphological(text){
+function morphological(textlst){
     return new Promise((resolve, reject) => {
-        xhr.open('GET', `http://localhost:${server_port}/morphological?text=${text}`);
-        xhr.send();
+        xhr.open('POST', `http://localhost:${server_port}/morphological`);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        let data = JSON.stringify(textlst);
+        xhr.send(data);
         xhr.onreadystatechange = () => {
             if(xhr.readyState == 4 && xhr.status == 200){
                 var morphological = JSON.parse(xhr.responseText);
+                console.log(morphological);
                 resolve(morphological);
             }
         }
@@ -79,9 +82,14 @@ async function main(videoId, continuation_key){
     live_chat = await get_chat(videoId, continuation_key);
 
     /* 負荷軽減のため、1回の処理は10件まで */
-    var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0,10);
+    /* actionsがあるかどうか */
+    if(live_chat['continuationContents']['liveChatContinuation']['actions']){
+        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0,10);
+    }else{
+        var chatItems = undefined;
+    }
     /* timedContinuationDataとinvalidationContinuationData 2つのタイプがある */
-    var continuation = live_chat['continuationContents']['liveChatContinuation']['continuations'][0]
+    var continuation = live_chat['continuationContents']['liveChatContinuation']['continuations'][0];
     if(continuation['invalidationContinuationData']){
         var continuation_key = continuation['invalidationContinuationData']['continuation'];
         var timeoutMs = Number(continuation['invalidationContinuationData']['timeoutMs']);
@@ -91,36 +99,42 @@ async function main(videoId, continuation_key){
     }
     console.log("timeout: "+timeoutMs);
     if(chatItems){
-        chatItems.forEach(chatItem => {
+        // チャット一覧を配列化, キューにプッシュ
+        chatItems = chatItems.map(obj=>{
             try{
-                let text = chatItem['addChatItemAction']['item']['liveChatTextMessageRenderer']['message']['runs'][0]['text'];
-                let timeStamp = Number(chatItem['addChatItemAction']['item']['liveChatTextMessageRenderer']['timestampUsec']) / 1000000;
-                let id = chatItem['addChatItemAction']['item']['liveChatTextMessageRenderer']['id'];
-                if(!(id in id_queue)){
-                    if(text){ // textがundefinedの場合は除外
-                        console.log(`${timeStamp}  ${text}`);
-                        morphological(text).then(words => {
-                            console.log(words);
-                            words.forEach(word => {
-                                // node_wordsにwordが含まれていた場合
-                                let index = node_words.map(obj=>obj.word).indexOf(word);
-                                if(0<=index){
-                                    node_words[index].count = node_words[index].count + 1;
-                                    node_words[index].time = Date.now();
-                                }else{
-                                    node_words.push({
-                                        word: word, 
-                                        count: 1,
-                                        time: Date.now()
-                                    });
-                                }
-                            });
-                        });
+                let text = obj['addChatItemAction']['item']['liveChatTextMessageRenderer']['message']['runs'][0]['text'];
+                let timeStamp = Number(obj['addChatItemAction']['item']['liveChatTextMessageRenderer']['timestampUsec']) / 1000000;
+                let id = obj['addChatItemAction']['item']['liveChatTextMessageRenderer']['id'];
+                if( !(id in id_queue) ){ // id_queueに含まれていないか
+                    if(text){ // textが存在するか
+                        id_queue.push(id);
+                        return {text: text, timeStamp: timeStamp, id: id};
+                    }else{
+                        return false;
                     }
-                    id_queue.push(id);
                 }
             }catch{}
         });
+    }
+    if(chatItems){
+        console.log(chatItems);
+        morphological(chatItems.map(obj=>obj['text']))
+            .then(wordslst => {
+                wordslst.forEach(word => {
+                    // node_wordsにwordが含まれていた場合
+                    let index = node_words.map(obj=>obj.word).indexOf(word);
+                    if(0 <= index){
+                        node_words[index].count = node_words[index].count + 1;
+                        node_words[index].time = Date.now();
+                    }else{
+                        node_words.push({
+                            word: word, 
+                            count: 1,
+                            time: Date.now()
+                        });
+                    }
+                });
+            });
         node_words = update_words();
         draw();
     }
@@ -135,7 +149,7 @@ async function main(videoId, continuation_key){
 
 
 (async()=>{
-    var videoId = "hKpTj2t60gk";
+    var videoId = "ASltGgf6P7w";
     var continuation_key = await get_continuation(videoId);
     console.log("continuation key: "+continuation_key);
     main(videoId, continuation_key);
@@ -143,10 +157,6 @@ async function main(videoId, continuation_key){
 
 
 function draw(){
-    //let dom = "";
-    //node_words.forEach(obj=>{dom += `<p style="font-size:${16 * obj.count}px;display:inline-block;">${obj.word}</p>`;});
-    //document.getElementById("mynetwork").innerHTML = dom;
-    
     /* ノード追加 */
     node_words.forEach(obj=>{
         update_node(obj.word);
