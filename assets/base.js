@@ -35,6 +35,19 @@ function get_chat(videoId, continuation_key){
     });
 }
 
+function morphological(text){
+    return new Promise((resolve, reject) => {
+        xhr.open('GET', `http://localhost:${server_port}/morphological?text=${text}`);
+        xhr.send();
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4 && xhr.status == 200){
+                var morphological = JSON.parse(xhr.responseText);
+                resolve(morphological);
+            }
+        }
+    });
+}
+
 var id_queue = [];
 var id_queue_limit = 100;
 var node_limit = 10; // ノード数
@@ -122,7 +135,7 @@ async function main(videoId, continuation_key){
 
 
 (async()=>{
-    var videoId = "-dnooj7bibI";
+    var videoId = "hKpTj2t60gk";
     var continuation_key = await get_continuation(videoId);
     console.log("continuation key: "+continuation_key);
     main(videoId, continuation_key);

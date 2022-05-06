@@ -93,7 +93,7 @@ function nodeRemove(stack) {
 var analyzed = [];
 var builder = kuromoji.builder({ dicPath: "/youtubelive-chat-mining/dict" });
 
-function morphological(text) {
+function _morphological(text) {
     return new Promise((resolve, reject) => {
         // 1文字の場合
         if(1 == text.length){

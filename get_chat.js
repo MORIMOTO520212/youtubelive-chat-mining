@@ -1,6 +1,6 @@
 import express from 'express';
 import fetch from 'node-fetch';
-
+import kuromoji from 'kuromoji';
 
 const app = express();
 
@@ -15,6 +15,7 @@ var analyzed = [];
 var builder = kuromoji.builder({ dicPath: "node_modules/kuromoji/dict" });
 
 function morphological(text) {
+    console.log("morphological.");
     return new Promise((resolve, reject) => {
         // 1文字の場合
         if(1 == text.length){
