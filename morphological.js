@@ -91,6 +91,7 @@ function nodeRemove(stack) {
     ];
 */
 var analyzed = [];
+var builder = kuromoji.builder({ dicPath: "/youtubelive-chat-mining/dict" });
 
 function morphological(text) {
     return new Promise((resolve, reject) => {
@@ -105,8 +106,7 @@ function morphological(text) {
             resolve( analyzed[ analyzed.map(obj=>obj.text).indexOf(text) ].array );
         // 形態素解析
         }else{
-            kuromoji.builder({ dicPath: "/youtubelive-chat-mining/dict" })
-            .build((err, tokenizer) => {
+            builder.build((err, tokenizer) => {
                 if(err) {
                     console.log(err);
                 }else{
