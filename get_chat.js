@@ -48,7 +48,6 @@ function morphological(textlst) {
                 words.push(wordslst[i][j]);
             }
         }
-        console.log(words);
         resolve(words);
     });
 }

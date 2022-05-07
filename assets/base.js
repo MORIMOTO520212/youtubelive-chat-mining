@@ -53,7 +53,7 @@ function morphological(textlst){
 
 var id_queue = [];
 var id_queue_limit = 100;
-var node_limit = 10; // ノード数
+
 /*
     var node_words = [
         {
@@ -84,10 +84,12 @@ async function main(videoId, continuation_key){
     /* 負荷軽減のため、1回の処理は10件まで */
     /* actionsがあるかどうか */
     if(live_chat['continuationContents']['liveChatContinuation']['actions']){
-        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0,10);
+        // テキスト処理数を制限
+        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0,text_limit);
     }else{
-        var chatItems = undefined;
+        var chatItems = false;
     }
+
     /* timedContinuationDataとinvalidationContinuationData 2つのタイプがある */
     var continuation = live_chat['continuationContents']['liveChatContinuation']['continuations'][0];
     if(continuation['invalidationContinuationData']){
@@ -97,6 +99,7 @@ async function main(videoId, continuation_key){
         var continuation_key = continuation['timedContinuationData']['continuation'];
         var timeoutMs = Number(continuation['timedContinuationData']['timeoutMs']);
     }
+
     console.log("timeout: "+timeoutMs);
     if(chatItems){
         // チャット一覧を配列化, キューにプッシュ
@@ -109,11 +112,10 @@ async function main(videoId, continuation_key){
                     if(text){ // textが存在するか
                         id_queue.push(id);
                         return {text: text, timeStamp: timeStamp, id: id};
-                    }else{
-                        return false;
                     }
                 }
             }catch{}
+            return false;
         });
     }
     if(chatItems){
@@ -144,12 +146,11 @@ async function main(videoId, continuation_key){
         id_queue = id_queue.slice(id_queue.length-100, id_queue.length);
     }
 
-    setTimeout(()=>main(videoId, continuation_key), 10000);
+    setTimeout(()=>main(videoId, continuation_key), timeoutMs);
 }
 
 
 (async()=>{
-    var videoId = "ASltGgf6P7w";
     var continuation_key = await get_continuation(videoId);
     console.log("continuation key: "+continuation_key);
     main(videoId, continuation_key);
@@ -157,9 +158,17 @@ async function main(videoId, continuation_key){
 
 
 function draw(){
+    /* 単語カウントmax値 */
+    let max = Math.max(...node_words.map(obj=>obj.count));
     /* ノード追加 */
     node_words.forEach(obj=>{
-        update_node(obj.word);
+        /* フォントサイズを決定 */
+        // 最大フォントサイズ 40px
+        let fontSize = 40 * (obj.count / max);
+        // 最小フォントサイズ 16px
+        if(16 > fontSize) fontSize = 16;
+        // ノード更新
+        update_node(obj.word, fontSize);
     });
     /* ノード削除 */
     let lst = node_words.map(obj=>obj.word);

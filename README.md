@@ -13,4 +13,4 @@ curl "http://localhost:3000/chat?id=<video Id>&continuation=<continuation key>"
 ```
 
 ### 除外ワード
-['？', '?', '～','・']
+['？', '?', '～', '・', '！']

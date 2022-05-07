@@ -39,16 +39,22 @@ var options = {
             }
         },
     },
-    edges: {
-        color: "lightgray",
-    },
-    physics: {}
+    edges: {},
+    physics: {
+        barnesHut: {
+            centralGravity: 0.6,
+            springLength: 170,
+            springConstant: 0.08
+        },
+        maxVelocity: 81,
+        minVelocity: 0.18
+    }
 };
 
 var network = new vis.Network(container, data, options);
 
 
-function update_node(word){
+function update_node(word, fontSize){
     let li_nodes = nodes.map(obj=> [obj.id, obj.label]);
     /* 既存のノードラベルにwordが含まれている場合 */
     if(0 <= li_nodes.map(obj=>obj[1]).indexOf(word)) {
@@ -56,7 +62,7 @@ function update_node(word){
             if(word == li_node[1]){
                 nodes.update([{
                     id: li_node[0],
-                    font: {size: 16}, /* min-maxを当てる */
+                    font: {size: fontSize}, /* min-maxを当てる */
                 }]);
             }
         });
@@ -66,7 +72,7 @@ function update_node(word){
         nodes.update([{
             id: randInt,
             label: word,
-            font: {size: 16}, /* min-maxを当てる */
+            font: {size: fontSize}, /* min-maxを当てる */
         }]);
     }
 }
@@ -82,58 +88,3 @@ function nodeRemove(stack) {
         nodes.remove(removeId);
     }
 }
-
-/*
-    var analyzed = [
-        {text: text, array: [word1, word2,...]},
-        { ... },
-        { ... },
-    ];
-*/
-var analyzed = [];
-var builder = kuromoji.builder({ dicPath: "/youtubelive-chat-mining/dict" });
-
-function _morphological(text) {
-    return new Promise((resolve, reject) => {
-        // 1文字の場合
-        if(1 == text.length){
-            resolve([text]);
-        // 20文字以上の場合
-        }else if(20 < text.length){
-            resolve([]);
-        // 解析済みワードがある場合
-        }else if(0 <= analyzed.map(obj=>obj.text).indexOf(text)){
-            resolve( analyzed[ analyzed.map(obj=>obj.text).indexOf(text) ].array );
-        // 形態素解析
-        }else{
-            builder.build((err, tokenizer) => {
-                if(err) {
-                    console.log(err);
-                }else{
-                    /*
-                        let li_nodes = [
-                            [id, label, count],
-                            [id, label, count]...
-                        ]
-                    */
-                    let tokens = tokenizer.tokenize(text);
-                    /* analyzed 記録 */
-                    if(-1 == analyzed.map(obj=>obj.text).indexOf(text)){
-                        analyzed.push({
-                            text: text,
-                            array: tokens.map(obj=>obj.surface_form),
-                        });
-                    }
-                    /* analyzed 削除 */
-                    if(500 < analyzed.length){
-                        analyzed = analyzed.slice(analyzed.length-500, analyzed.length);
-                    }
-                    resolve(tokens.map(obj=>obj.surface_form));
-                }
-            });
-        }
-    });
-}
-
-//update_node(word);
-//nodeRemove(10);
