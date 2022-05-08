@@ -82,6 +82,8 @@ var id_queue = [];
 var id_queue_limit = 100;
 
 /*
+    node_wordsには取得した単語が500個格納されている。
+    その中から、ノードの表示は時間順に指定数表示される。
     var node_words = [
         {
             word: "word",
@@ -101,7 +103,7 @@ function update_words(){
         if(a.time > b.time) return -1;
         return 0;
     });
-    return node_words.slice(0, node_limit);
+    return node_words.slice(0, node_words_limit);
 }
 
 async function main(videoId, continuation_key){
@@ -259,22 +261,30 @@ function update_node(word, fontSize){
 
 function draw(){
     /* 単語カウントmax値 */
-    let max = Math.max(...node_words.map(obj=>obj.count));
+    let max = Math.max(...node_words.slice(0,node_limit).map(obj=>obj.count));
+    let i = 0;
+    let delay = 120; // ms
+
     /* ノード追加 */
-    node_words.forEach(obj=>{
+    node_words.slice(0,node_limit).forEach(obj=>{
         /* フォントサイズを決定 */
         // 最大フォントサイズ 40px
         let fontSize = 40 * (obj.count / max);
         // 最小フォントサイズ 16px
         if(16 > fontSize) fontSize = 16;
         // ノード更新
-        update_node(obj.word, fontSize);
+        // 遅延させ順番に表示
+        setTimeout(()=>{update_node(obj.word, fontSize)}, delay * i);
+        i += 1;
     });
+
     /* ノード削除 */
-    let lst = node_words.map(obj=>obj.word);
+    i = 0;
+    let lst = node_words.slice(0,node_limit).map(obj=>obj.word);
     nodes.forEach(obj=>{
-        if(0 > lst.indexOf(obj.label)){
-            nodes.remove(obj.id);
+        if(0 > lst.indexOf(obj.label)){ // lstにnodes.labelが無ければ
+            setTimeout(()=>{nodes.remove(obj.id)}, delay * i);
+            i += 1;
         }
     });
 }
