@@ -1,21 +1,24 @@
 {
-  "dependencies": {
-    "express": "^4.18.1",
-    "fetch": "^1.1.0",
-    "kuromoji": "^0.1.2",
-    "node-fetch": "^3.2.4",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6"
-  },
   "name": "youtubelive-chat-mining",
   "version": "1.0.0",
+  "description": "```bash\r curl \"http://localhost:3000/continuation?id=<video Id>\"\r ```",
   "main": "get_chat.js",
-  "type": "module",
+  "dependencies": {
+    "express": "^4.18.1",
+    "node-fetch": "^3.2.4"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MORIMOTO520212/youtubelive-chat-mining.git"
+  },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "bugs": {
+    "url": "https://github.com/MORIMOTO520212/youtubelive-chat-mining/issues"
+  },
+  "homepage": "https://github.com/MORIMOTO520212/youtubelive-chat-mining#readme"
 }

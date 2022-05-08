@@ -1,57 +1,11 @@
 import express from 'express';
 import fetch from 'node-fetch';
-import kuromoji from 'kuromoji';
 import bodyParser from 'body-parser';
 
 // Express インスタンス
 const app = express();
 // json形式でパース
 app.use(bodyParser.json());
-
-/*
-    var analyzed = [
-        {text: text, array: [word1, word2,...]},
-        { ... },
-        { ... },
-    ];
-*/
-var builder = kuromoji.builder({ dicPath: "node_modules/kuromoji/dict" });
-
-async function tokenize(text){
-    return new Promise((resolve, reject) => {
-        // テキストが空白の場合
-        if(!text){resolve([])}
-        // 1文字の場合
-        if(1 == text.length){
-            resolve([text]);
-        // 形態素解析
-        }else{
-            builder.build((err, tokenizer) => {
-                if(err) {
-                    reject(err);
-                }else{
-                    let tokens = tokenizer.tokenize(text);
-                    resolve(tokens.map(obj=>obj.surface_form));
-                }
-            });
-        }
-    });
-}
-
-function morphological(textlst) {
-    console.log("morphological.");
-    return new Promise(async (resolve, reject) => {
-        let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
-        let words = [];
-        for(let i=0; i<wordslst.length; i++){
-            for(let j=0; j<wordslst[i].length; j++){
-                words.push(wordslst[i][j]);
-            }
-        }
-        resolve(words);
-    });
-}
-
 
 // CROS設定
 const allowCrossDomain = (req, res, next) => {
@@ -223,12 +177,6 @@ app.get('/chat', (req, res) => {
     let continuation_key = req.query.continuation;
     getChat(videoId, continuation_key).then(live_chat => {
         res.json(live_chat);
-    });
-});
-
-app.post('/morphological', (req, res) => {
-    morphological(req.body).then(words => {
-        res.json(words);
     });
 });
 

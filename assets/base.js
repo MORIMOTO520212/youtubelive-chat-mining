@@ -35,21 +35,48 @@ function get_chat(videoId, continuation_key){
     });
 }
 
-function morphological(textlst){
+
+/* kuromoji.js */
+var builder = kuromoji.builder({ dicPath: "dict" });
+var tokenizer;
+builder.build((err, _tokenizer) => {
+    if(err) {
+        reject(err);
+    }else{
+        tokenizer = _tokenizer;
+        console.log("load tokenizer.");
+    }
+});
+
+async function tokenize(text){
     return new Promise((resolve, reject) => {
-        xhr.open('POST', `http://localhost:${server_port}/morphological`);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        let data = JSON.stringify(textlst);
-        xhr.send(data);
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState == 4 && xhr.status == 200){
-                var morphological = JSON.parse(xhr.responseText);
-                console.log(morphological);
-                resolve(morphological);
-            }
+        // テキストが空白の場合
+        if(!text){resolve([])}
+        // 1文字の場合
+        if(1 == text.length){
+            resolve([text]);
+        // 形態素解析
+        }else{
+            let tokens = tokenizer.tokenize(text);
+            resolve(tokens.map(obj=>obj.surface_form));
         }
     });
 }
+
+/* 形態素解析 */
+function morphological(textlst) {
+    return new Promise(async (resolve, reject) => {
+        let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
+        let words = [];
+        for(let i=0; i<wordslst.length; i++){
+            for(let j=0; j<wordslst[i].length; j++){
+                words.push(wordslst[i][j]);
+            }
+        }
+        resolve(words);
+    });
+}
+
 
 var id_queue = [];
 var id_queue_limit = 100;
@@ -149,13 +176,86 @@ async function main(videoId, continuation_key){
     setTimeout(()=>main(videoId, continuation_key), timeoutMs);
 }
 
-
+/* メイン処理 */
 (async()=>{
     var continuation_key = await get_continuation(videoId);
     console.log("continuation key: "+continuation_key);
     main(videoId, continuation_key);
 })();
 
+
+// create a network
+var container = document.getElementById('mynetwork');
+/*
+    create an array with nodes
+    
+    var nodes = new vis.DataSet([
+        {
+            id: <random int>,
+            label: <text string>,
+            font: {
+                size: 50 * <min-max>,
+            }
+        },
+        { ... },
+        { ... },
+    ]);
+*/
+var nodes = new vis.DataSet();
+
+var data = {
+    nodes: nodes
+};
+var options = {
+    autoResize: true,
+    width: "100%",
+    height: "100%",
+    nodes: {
+        color: {
+            background: "#ffffff00",
+            border: "#ffffff00",
+            highlight: {
+                background: "#ffffff00",
+                border: "#ffffff00"
+            }
+        },
+    },
+    edges: {},
+    physics: {
+        barnesHut: {
+            centralGravity: 0.6,
+            springLength: 170,
+            springConstant: 0.08
+        },
+        maxVelocity: 81,
+        minVelocity: 0.18
+    }
+};
+
+var network = new vis.Network(container, data, options);
+
+function update_node(word, fontSize){
+    let li_nodes = nodes.map(obj=> [obj.id, obj.label]);
+    /* 既存のノードラベルにwordが含まれている場合 */
+    if(0 <= li_nodes.map(obj=>obj[1]).indexOf(word)) {
+        li_nodes.forEach(li_node => {
+            if(word == li_node[1]){
+                nodes.update([{
+                    id: li_node[0],
+                    font: {size: fontSize}, /* min-maxを当てる */
+                }]);
+            }
+        });
+    /* 含まれていない場合は新しく追加 */
+    }else{
+        let randInt = Math.floor(Math.random()*9999);
+        nodes.update([{
+            id: randInt,
+            label: word,
+            font: {size: fontSize}, /* min-maxを当てる */
+        }]);
+    }
+}
 
 function draw(){
     /* 単語カウントmax値 */
