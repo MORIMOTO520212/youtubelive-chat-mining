@@ -96,17 +96,31 @@ var id_queue_limit = 100;
 */
 var node_words = [];
 
-/* 頻出度順に並び替えし50個の配列にする */
-function update_words(){
-    node_words.sort((a, b) => {
-        if(a.time < b.time) return 1;
-        if(a.time > b.time) return -1;
-        return 0;
-    });
+/*
+    時間順に並び替えし50個の配列にする
+    単語の時間は取得するごとに自動的に更新される
+*/
+function update_words(sortType) {
+    if("time" == sortType){
+        node_words.sort((a, b) => {
+            if(a.time < b.time) return 1;
+            if(a.time > b.time) return -1;
+            return 0;
+        });
+        
+    }else if("count" == sortType){
+        node_words.sort((a, b) => {
+            if(a.count < b.count) return 1;
+            if(a.count > b.count) return -1;
+            return 0;
+        });
+    }
+    // node_words_limitの範囲で切り落とし返す
     return node_words.slice(0, node_words_limit);
 }
 
-async function main(videoId, continuation_key){
+
+async function main(videoId, continuation_key) {
     /* ライブチャット レスポンスデータ */
     live_chat = await get_chat(videoId, continuation_key);
 
@@ -114,7 +128,7 @@ async function main(videoId, continuation_key){
     /* actionsがあるかどうか */
     if(live_chat['continuationContents']['liveChatContinuation']['actions']){
         // テキスト処理数を制限
-        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0,text_limit);
+        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0, text_limit);
     }else{
         var chatItems = false;
     }
@@ -129,7 +143,7 @@ async function main(videoId, continuation_key){
         var timeoutMs = Number(continuation['timedContinuationData']['timeoutMs']);
     }
 
-    console.log("timeout: "+timeoutMs);
+    console.log("timeout: " + timeoutMs);
     if(chatItems){
         // チャット一覧を配列化, キューにプッシュ
         chatItems = chatItems.map(obj=>{
@@ -166,7 +180,8 @@ async function main(videoId, continuation_key){
                     }
                 });
             });
-        node_words = update_words();
+        node_words = update_words('time'); // 時間でソート
+        node_words = update_words('count'); // カウント数でソート
         draw();
     }
 
@@ -225,7 +240,7 @@ var options = {
     edges: {},
     physics: {
         barnesHut: {
-            centralGravity: 0.6,
+            centralGravity: 0.8,
             springLength: 170,
             springConstant: 0.08
         },
@@ -269,9 +284,9 @@ function draw(){
     node_words.slice(0,node_limit).forEach(obj=>{
         /* フォントサイズを決定 */
         // 最大フォントサイズ 40px
-        let fontSize = 40 * (obj.count / max);
+        let fontSize = 100 * (obj.count / max);
         // 最小フォントサイズ 16px
-        if(16 > fontSize) fontSize = 16;
+        if(16 > fontSize) fontSize = 20;
         // ノード更新
         // 遅延させ順番に表示
         setTimeout(()=>{update_node(obj.word, fontSize)}, delay * i);
