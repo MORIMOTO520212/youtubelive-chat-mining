@@ -54,7 +54,7 @@ async function tokenize(text){
         if(!text){resolve([])}
         // 1文字の場合
         if(1 == text.length){
-            resolve([text]);
+            resolve([text]);    
         // 形態素解析
         }else{
             let tokens = tokenizer.tokenize(text);
@@ -70,7 +70,9 @@ function morphological(textlst) {
         let words = [];
         for(let i=0; i<wordslst.length; i++){
             for(let j=0; j<wordslst[i].length; j++){
-                words.push(wordslst[i][j]);
+                if( !(wordslst[i][j].length && wordslst[i][j].match(/[ぁ-んー]/g)) ){ // 1文字のあ～んは返さない
+                    words.push(wordslst[i][j]);
+                }
             }
         }
         resolve(words);
