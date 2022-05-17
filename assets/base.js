@@ -35,6 +35,16 @@ function get_chat(videoId, continuation_key){
     });
 }
 
+/* フォントカラー生成 */
+var colorList = [
+    "#2ca02c", "#ffbb78", "#9263bb",
+    "#97de89", "#dbdb8d", "#baba12",
+    "#06b9cd", "#d41820", "#14bdcd",
+    "#f6b3d0", "#1f77b4", "#767472"
+];
+function generate_color(){
+    return colorList[Math.floor(Math.random() * colorList.length)]
+}
 
 /* kuromoji.js */
 var builder = kuromoji.builder({ dicPath: "dict" });
@@ -64,21 +74,24 @@ async function tokenize(text){
 }
 
 /* 形態素解析 */
+var exception_words = ['？', '?', '～', '・', '！', '!', '「', '」', '（', '）', '(', ')']
 function morphological(textlst) {
     return new Promise(async (resolve, reject) => {
         let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
         let words = [];
-        for(let i=0; i<wordslst.length; i++){
-            for(let j=0; j<wordslst[i].length; j++){
+        for(let i=0; i < wordslst.length; i++){
+            for(let j=0; j < wordslst[i].length; j++){
                 if( !(wordslst[i][j].length && wordslst[i][j].match(/[ぁ-んー]/g)) ){ // 1文字のあ～んは返さない
-                    words.push(wordslst[i][j]);
+                    // 除外単語が含まれていなければ
+                    if(-1 == exception_words.indexOf(wordslst[i][j])){
+                        words.push(wordslst[i][j]);
+                    }
                 }
             }
         }
         resolve(words);
     });
 }
-
 
 var id_queue = [];
 var id_queue_limit = 100;
@@ -174,9 +187,11 @@ async function main(videoId, continuation_key) {
                         node_words[index].count = node_words[index].count + 1;
                         node_words[index].time = Date.now();
                     }else{
+                        // 新しいノードを追加する
                         node_words.push({
                             word: word, 
-                            count: 1,
+                            count: 1, 
+                            color: generate_color(), 
                             time: Date.now()
                         });
                     }
@@ -236,7 +251,7 @@ var options = {
             highlight: {
                 background: "#ffffff00",
                 border: "#ffffff00"
-            }
+            },
         },
     },
     edges: {},
@@ -253,7 +268,7 @@ var options = {
 
 var network = new vis.Network(container, data, options);
 
-function update_node(word, fontSize){
+function update_node(word, fontSize, fontColor){
     let li_nodes = nodes.map(obj=> [obj.id, obj.label]);
     /* 既存のノードラベルにwordが含まれている場合 */
     if(0 <= li_nodes.map(obj=>obj[1]).indexOf(word)) {
@@ -261,7 +276,12 @@ function update_node(word, fontSize){
             if(word == li_node[1]){
                 nodes.update([{
                     id: li_node[0],
-                    font: {size: fontSize}, /* min-maxを当てる */
+                    font: { 
+                        size: fontSize, /* min-maxを当てる */
+                        color: fontColor, 
+                        strokeColor: fontColor,
+                        strokeWidth: 1
+                    }, 
                 }]);
             }
         });
@@ -291,7 +311,7 @@ function draw(){
         if(16 > fontSize) fontSize = 20;
         // ノード更新
         // 遅延させ順番に表示
-        setTimeout(()=>{update_node(obj.word, fontSize)}, delay * i);
+        setTimeout(()=>{update_node(obj.word, fontSize, obj.color)}, delay * i);
         i += 1;
     });
 
