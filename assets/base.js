@@ -74,17 +74,19 @@ async function tokenize(text){
 }
 
 /* 形態素解析 */
+// 除外
 var exception_words = [
     '？', '?', '～', '・', '！', '!', 
     '「', '」', '（', '）', '(', ')',
-    '[', ']', '/']
+    '[', ']', '/', '、', '【', '】']
 function morphological(textlst) {
     return new Promise(async (resolve, reject) => {
         let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
         let words = [];
         for(let i=0; i < wordslst.length; i++){
             for(let j=0; j < wordslst[i].length; j++){
-                if( !(wordslst[i][j].length && wordslst[i][j].match(/[ぁ-んー]/g)) ){ // 1文字のあ～んは返さない
+                // 1文字の「あ～ん」でなければ
+                if( !(wordslst[i][j].length && wordslst[i][j].match(/[ぁ-んー]/g)) ){
                     // 除外単語が含まれていなければ
                     if(-1 == exception_words.indexOf(wordslst[i][j])){
                         words.push(wordslst[i][j]);
