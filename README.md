@@ -1,6 +1,9 @@
 # YouTube Live Chat Mining
 ## YouTubeライブのチャットを解析
 
+### TODO
+・言語指定
+
 ## get_chat.js
 ### continuationキーを取得する
 ```bash

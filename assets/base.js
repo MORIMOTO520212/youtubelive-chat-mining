@@ -74,7 +74,10 @@ async function tokenize(text){
 }
 
 /* 形態素解析 */
-var exception_words = ['？', '?', '～', '・', '！', '!', '「', '」', '（', '）', '(', ')']
+var exception_words = [
+    '？', '?', '～', '・', '！', '!', 
+    '「', '」', '（', '）', '(', ')',
+    '[', ']', '/']
 function morphological(textlst) {
     return new Promise(async (resolve, reject) => {
         let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
@@ -325,4 +328,3 @@ function draw(){
         }
     });
 }
-//setInterval(draw, 10000);
