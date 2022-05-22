@@ -4,10 +4,9 @@
  * * * *  * * * *  * * * *  * * * */
 
 var xhr = new XMLHttpRequest();
-/* API SERVER PORT */
+/* APIサーバーポート */
 var server_port = 3000;
 var live_chat;
-
 
 function get_continuation(videoId){
     return new Promise((resolve, reject) => {
@@ -35,7 +34,7 @@ function get_chat(videoId, continuation_key){
     });
 }
 
-/* フォントカラー生成 */
+/* ワードのフォントカラー生成 */
 var colorList = [
     "#2ca02c", "#ffbb78", "#9263bb",
     "#97de89", "#dbdb8d", "#baba12",
@@ -46,7 +45,11 @@ function generate_color(){
     return colorList[Math.floor(Math.random() * colorList.length)]
 }
 
-/* kuromoji.js */
+
+
+
+
+/* kuromoji.js 初期化 */
 var builder = kuromoji.builder({ dicPath: "dict" });
 var tokenizer;
 builder.build((err, _tokenizer) => {
@@ -58,6 +61,9 @@ builder.build((err, _tokenizer) => {
     }
 });
 
+/*
+    kuromoji.js 形態素解析
+*/
 async function tokenize(text){
     return new Promise((resolve, reject) => {
         // テキストが空白の場合
@@ -74,11 +80,12 @@ async function tokenize(text){
 }
 
 /* 形態素解析 */
-// 除外
+// 除外文字
 var exception_words = [
     '？', '?', '～', '・', '！', '!', 
     '「', '」', '（', '）', '(', ')',
     '[', ']', '/', '、', '【', '】']
+
 function morphological(textlst) {
     return new Promise(async (resolve, reject) => {
         let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
@@ -97,6 +104,10 @@ function morphological(textlst) {
         resolve(words);
     });
 }
+
+
+
+
 
 var id_queue = [];
 var id_queue_limit = 100;
@@ -144,14 +155,22 @@ async function main(videoId, continuation_key) {
     /* ライブチャット レスポンスデータ */
     live_chat = await get_chat(videoId, continuation_key);
 
-    /* 負荷軽減のため、1回の処理は10件まで */
-    /* actionsがあるかどうか */
-    if(live_chat['continuationContents']['liveChatContinuation']['actions']){
-        // テキスト処理数を制限
-        var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0, text_limit);
-    }else{
-        var chatItems = false;
+    /* エラーチェック */
+    if(live_chat['error']){
+        console.log(live_chat)
+        return 0;
     }
+    if(! live_chat['continuationContents']['liveChatContinuation']){
+        console.log("['liveChatContinuation'] not found.")
+        return 0;
+    }
+    if(! live_chat['continuationContents']['liveChatContinuation']['actions']){
+        console.log("['actions'] not found.")
+        return 0;
+    }
+
+    // text_limit テキスト処理数を制限
+    var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0, text_limit);
 
     /* timedContinuationDataとinvalidationContinuationData 2つのタイプがある */
     var continuation = live_chat['continuationContents']['liveChatContinuation']['continuations'][0];
@@ -183,10 +202,11 @@ async function main(videoId, continuation_key) {
     }
     if(chatItems){
         console.log(chatItems);
+        /* morphological([チャットテキスト...]) */
         morphological(chatItems.map(obj=>obj['text']))
             .then(wordslst => {
                 wordslst.forEach(word => {
-                    // node_wordsにwordが含まれていた場合
+                    // ノードを更新する
                     let index = node_words.map(obj=>obj.word).indexOf(word);
                     if(0 <= index){
                         node_words[index].count = node_words[index].count + 1;
@@ -204,7 +224,8 @@ async function main(videoId, continuation_key) {
             });
         node_words = update_words('time'); // 時間でソート
         node_words = update_words('count'); // カウント数でソート
-        draw();
+        
+        draw(); // ワードクラウド生成
     }
 
     /* チャットのキューを100に制限する */

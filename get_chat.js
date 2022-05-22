@@ -155,16 +155,29 @@ function getChat(videoId, continuation_key){
         headers: header,
         body: JSON.stringify(payload)
     }
+
     return new Promise((resolve, reject) => {
         fetch("https://www.youtube.com/youtubei/v1/live_chat/get_live_chat?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8&prettyPrint=false", options)
             .then((response) => {
                 response.json().then((body) => {
                     resolve(body);
                 });
+            })
+            .catch((error) => {
+                resolve(error);
             });
     });
 }
-// GETリクエスト
+
+/*
+    リクエスト１
+    GET http://localhost:3000/continuation
+    RES コンティニュエーションキー
+
+    リクエスト２
+    GET http://localhost:3000/chat
+    RES ライブチャットデータ
+*/
 app.get('/continuation', (req, res) => {
     let videoId = req.query.id;
     getContinuation(videoId).then((continuation_key) => {
