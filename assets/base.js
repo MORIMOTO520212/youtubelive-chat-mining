@@ -150,7 +150,36 @@ function update_words(sortType) {
     return node_words.slice(0, node_words_limit);
 }
 
+/*
+    単語の関連性からノードにエッジ線を引く
+    引数：textlist [text1, text2...]
 
+*/
+async function word_relevance(textlist){
+    // 前後の単語を見つける
+    nodes.forEach(node=>{
+        textlist.forEach(text=>{
+            let splitText = text.split(node['label']);
+            if(1 < splitText.length){ // 単語が見つかれば
+                await morphological(splitText[0])
+                await morphological(splitText[1])
+            }
+        });
+    });
+    // 結合した単語をカウントする
+    nodes.forEach(node=>{
+
+    });
+}
+
+
+/*
+    var chatItems = {
+        text: (String) ChatbText,
+        timeStamp: (Int),
+        id: (String) ChatbID
+    }
+*/
 async function main(videoId, continuation_key) {
     /* ライブチャット レスポンスデータ */
     live_chat = await get_chat(videoId, continuation_key);
@@ -171,7 +200,6 @@ async function main(videoId, continuation_key) {
 
     // text_limit テキスト処理数を制限
     var chatItems = live_chat['continuationContents']['liveChatContinuation']['actions'].slice(0, text_limit);
-
     /* timedContinuationDataとinvalidationContinuationData 2つのタイプがある */
     var continuation = live_chat['continuationContents']['liveChatContinuation']['continuations'][0];
     if(continuation['invalidationContinuationData']){
@@ -224,7 +252,7 @@ async function main(videoId, continuation_key) {
             });
         node_words = update_words('time'); // 時間でソート
         node_words = update_words('count'); // カウント数でソート
-        
+        //word_relevance(chatItems.map(obj=>obj['text'])) // 単語の関連性からエッジ線を引く
         draw(); // ワードクラウド生成
     }
 
