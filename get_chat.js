@@ -45,15 +45,19 @@ const cookies = {
 
 function getContinuation(videoId){
     console.log("get continuation.");
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         fetch(`https://www.youtube.com/watch?v=${videoId}`)
             .then((response) => {
                 response.text().then((text) => {
-                    let res = text.match("var ytInitialData = {.*}}}}");
-                    res = res[0].replace("var ytInitialData = ", "");
-                    let ytInitialData = JSON.parse(res);
-                    let continuation_key = ytInitialData['contents']['twoColumnWatchNextResults']['conversationBar']['liveChatRenderer']['continuations'][0]['reloadContinuationData']['continuation'];
-                    resolve(continuation_key);
+                    try{
+                        let res = text.match("var ytInitialData = {.*}}}}");
+                        res = res[0].replace("var ytInitialData = ", "");
+                        let ytInitialData = JSON.parse(res);
+                        let continuation_key = ytInitialData['contents']['twoColumnWatchNextResults']['conversationBar']['liveChatRenderer']['continuations'][0]['reloadContinuationData']['continuation'];
+                        resolve(continuation_key);
+                    }catch{
+                        resolve(false);
+                    }
                 });
             });
     });

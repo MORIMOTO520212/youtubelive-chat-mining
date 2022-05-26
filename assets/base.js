@@ -79,7 +79,12 @@ async function tokenize(text){
     });
 }
 
-/* 形態素解析 */
+/*
+    形態素解析
+    morphological(['text1', 'text2'...])
+    引数：テキストをまとめた1次元配列
+    戻り値：単語をまとめた1次元配列
+*/
 // 除外文字
 var exception_words = [
     '？', '?', '～', '・', '！', '!', 
@@ -87,13 +92,14 @@ var exception_words = [
     '[', ']', '/', '、', '【', '】']
 
 function morphological(textlst) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
         let wordslst = await Promise.all(textlst.map(async text => await tokenize(text)));
         let words = [];
         for(let i=0; i < wordslst.length; i++){
             for(let j=0; j < wordslst[i].length; j++){
                 // 1文字の「あ～ん」でなければ
-                if( !(wordslst[i][j].length && wordslst[i][j].match(/[ぁ-んー]/g)) ){
+                // !(wordslst[i][j].length==1 && wordslst[i][j].match(/[ぁ-んー]/g)))
+                if(1<wordslst[i][j].length){
                     // 除外単語が含まれていなければ
                     if(-1 == exception_words.indexOf(wordslst[i][j])){
                         words.push(wordslst[i][j]);
@@ -131,7 +137,7 @@ var node_words = [];
     時間順に並び替えし50個の配列にする
     単語の時間は取得するごとに自動的に更新される
 */
-function update_words(sortType) {
+function sort_words(sortType) {
     if("time" == sortType){
         node_words.sort((a, b) => {
             if(a.time < b.time) return 1;
@@ -152,24 +158,57 @@ function update_words(sortType) {
 
 /*
     単語の関連性からノードにエッジ線を引く
+    word_relevance(['text1', 'text2'...])
     引数：textlist [text1, text2...]
 
 */
-async function word_relevance(textlist){
+var relevance_words = [];
+function choose(text, type){
+    if(type=="front"){
+        if(text.length){
+            return text[text.length-1];
+        }
+    }
+    if(type=="back"){
+        if(text.length){
+            return text[0];
+        }
+    }
+    return false;
+}
+function word_relevance(textlist){
     // 前後の単語を見つける
-    nodes.forEach(node=>{
+    let labels = nodes.map(obj=>obj.label);
+    labels.forEach(label=>{
         textlist.forEach(text=>{
-            let splitText = text.split(node['label']);
+            let splitText = text.split(label);
             if(1 < splitText.length){ // 単語が見つかれば
-                await morphological(splitText[0])
-                await morphological(splitText[1])
+                (async() =>{
+                    let frontWord = choose(await morphological([splitText[0]]), "front");
+                    let backWord = choose(await morphological([splitText[1]]), "back");
+                    //console.log(frontWord, label, backWord);
+                    if(frontWord){
+                        let index = relevance_words.map(obj=>obj.word).indexOf(frontWord+label);
+                        if(0 <= index){
+                            relevance_words[index].count += 1;
+                        }else{
+                            relevance_words.push({word: frontWord+label, count: 1});
+                        }
+                    }
+                    if(backWord){
+                        let index = relevance_words.map(obj=>obj.word).indexOf(label+backWord);
+                        if(0 <= index){
+                            relevance_words[index].count += 1;
+                        }else{
+                            relevance_words.push({word: label+backWord, count: 1});
+                        }
+                    }
+                })();
             }
         });
     });
     // 結合した単語をカウントする
-    nodes.forEach(node=>{
-
-    });
+    //nodes.forEach(node=>{});
 }
 
 
@@ -228,6 +267,8 @@ async function main(videoId, continuation_key) {
             return false;
         });
     }
+    // chatItemsのfalseを消す
+    chatItems = chatItems.filter(x=>{return x != false});
     if(chatItems){
         console.log(chatItems);
         /* morphological([チャットテキスト...]) */
@@ -250,9 +291,9 @@ async function main(videoId, continuation_key) {
                     }
                 });
             });
-        node_words = update_words('time'); // 時間でソート
-        node_words = update_words('count'); // カウント数でソート
-        //word_relevance(chatItems.map(obj=>obj['text'])) // 単語の関連性からエッジ線を引く
+        node_words = sort_words('time'); // 時間でソート
+        node_words = sort_words('count'); // カウント数でソート
+        word_relevance(chatItems.map(obj=>obj['text'])) // 単語の関連性からエッジ線を引く
         draw(); // ワードクラウド生成
     }
 
