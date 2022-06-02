@@ -225,8 +225,7 @@ function word_relevance(textlist){
                 if(res == false){
                     edges.update([{
                         from: nodelst[tf[0]][0], 
-                        to:   nodelst[tf[1]][0],
-                        font: { strokeWidth: 3, strokeColor: "#525252" }
+                        to:   nodelst[tf[1]][0]
                     }]);
                 }
             }
@@ -381,7 +380,7 @@ var options = {
     nodes: {
         color: {
             background: "#ffffff00",
-            border: "#000",
+            border: "#666666",
             highlight: {
                 background: "#ffffff00",
                 border: "#ffffff00"
@@ -389,7 +388,10 @@ var options = {
         },
     },
     edges: {
-        color: "lightgray",
+        background: {
+            enabled: true,
+            color: "#000",
+        }
     },
     physics: {
         barnesHut: {
