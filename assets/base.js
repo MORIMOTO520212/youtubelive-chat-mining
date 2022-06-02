@@ -223,10 +223,10 @@ function word_relevance(textlist){
                 });
                 // edgesに含まれていなければ新規追加する
                 if(res == false){
-                    console.log("DETECT !!");
                     edges.update([{
                         from: nodelst[tf[0]][0], 
-                        to:   nodelst[tf[1]][0]
+                        to:   nodelst[tf[1]][0],
+                        font: { strokeWidth: 3, strokeColor: "#525252" }
                     }]);
                 }
             }
@@ -381,7 +381,7 @@ var options = {
     nodes: {
         color: {
             background: "#ffffff00",
-            border: "#ffffff00",
+            border: "#000",
             highlight: {
                 background: "#ffffff00",
                 border: "#ffffff00"
