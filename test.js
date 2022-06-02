@@ -5,7 +5,10 @@ var edges = [
 ];
 
 var res = edges.filter(obj => {
-    return (obj.from ==21) && (obj.to == 2);
+    console.log(`${obj.from} == ${1} && ${obj.to} == ${2}`);
+    return (obj.from ==1) && (obj.to == 2);
 });
 
-console.log(res);
+if(res == false){
+    console.log("t");
+}

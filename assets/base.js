@@ -217,13 +217,13 @@ function word_relevance(textlist){
             let tf = rlv.word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
             // 関係単語がどちらもtrueだった場合
             if(tf.every(indexOf=> 0 <= indexOf)){
-                console.log(nodelst[tf[0]], nodelst[tf[1]]);
-                // edgesに既に含まれているか調べる
-                let res = edges.filter(obj => {
+                // edgesに既に引かれているか調べる
+                let res = edges.map(obj=>obj).filter(obj => {
                     return (obj.from == nodelst[tf[0]][0]) && (obj.to == nodelst[tf[1]][0]);
                 });
                 // edgesに含まれていなければ新規追加する
-                if(!res){
+                if(res == false){
+                    console.log("DETECT !!");
                     edges.update([{
                         from: nodelst[tf[0]][0], 
                         to:   nodelst[tf[1]][0]
@@ -388,7 +388,9 @@ var options = {
             },
         },
     },
-    edges: {},
+    edges: {
+        color: "lightgray",
+    },
     physics: {
         barnesHut: {
             centralGravity: 0.8,
