@@ -162,7 +162,7 @@ function sort_words(sortType) {
     引数：textlist [text1, text2...]
 
 */
-var relevance_words = [];
+var relevance_words = []; // [{word: ['単語1', '単語2'], count: 1}...]
 function choose(text, type){
     if(type=="front"){
         if(text.length){
@@ -184,31 +184,44 @@ function word_relevance(textlist){
             let splitText = text.split(label);
             if(1 < splitText.length){ // 単語が見つかれば
                 (async() =>{
-                    let frontWord = choose(await morphological([splitText[0]]), "front");
-                    let backWord = choose(await morphological([splitText[1]]), "back");
-                    //console.log(frontWord, label, backWord);
+                    let frontWord = choose(await morphological([splitText[0]]), "front"); // 前の単語を取得
+                    let backWord = choose(await morphological([splitText[1]]), "back");   // 後ろの単語を取得
                     if(frontWord){
-                        let index = relevance_words.map(obj=>obj.word).indexOf(frontWord+label);
+                        // [front word] + [position word]のインデックス番号を返す
+                        let index = relevance_words.map(obj=>obj.word.join('')).indexOf(frontWord+label);
                         if(0 <= index){
-                            relevance_words[index].count += 1;
+                            relevance_words[index].count += 1; // カウント
                         }else{
-                            relevance_words.push({word: frontWord+label, count: 1});
+                            relevance_words.push({word: [frontWord,label], count: 1}); // 新規追加
                         }
                     }
                     if(backWord){
-                        let index = relevance_words.map(obj=>obj.word).indexOf(label+backWord);
+                        //[position word] + [back word]のインデックス番号を返す
+                        let index = relevance_words.map(obj=>obj.word.join('')).indexOf(label+backWord);
                         if(0 <= index){
                             relevance_words[index].count += 1;
                         }else{
-                            relevance_words.push({word: label+backWord, count: 1});
+                            relevance_words.push({word: [label,backWord], count: 1});
                         }
                     }
                 })();
             }
         });
     });
-    // 結合した単語をカウントする
-    //nodes.forEach(node=>{});
+    // エッジ線を引く
+    let words = relevance_words.map(obj=> obj.word); // [['単語1', '単語2']...]
+    let nodelst = nodes.map(obj=>[obj.id, obj.label]);    // 確保している単語リスト
+    words.forEach(word => {
+        // ２つの関係単語を１つずつ取り出してnodesに含まれているかを調べる
+        let tf = word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
+        // 関係単語がどちらもtrueだった場合
+        if(tf.every(indexOf=> 0 <= indexOf)){
+            console.log(nodelst[tf[0]], nodelst[tf[1]]);
+        }
+    });
+            //nodes.update([{}]); // ノード更新
+
+
 }
 
 
@@ -225,15 +238,28 @@ async function main(videoId, continuation_key) {
 
     /* エラーチェック */
     if(live_chat['error']){
+        alert(live_chat);
         console.log(live_chat)
         return 0;
     }
-    if(! live_chat['continuationContents']['liveChatContinuation']){
+    else if(live_chat['errno'] == "ETIMEDOUT"){
+        alert("ETIMEDOUT");
+        // continuationキーを取得してリトライ
+        var continuation_key = await get_continuation(videoId);
+        console.log("continuation key: "+continuation_key);
+        setTimeout(()=>main(videoId, continuation_key), 5000);
+    }
+    else if(! live_chat['continuationContents']['liveChatContinuation']){
+        alert("Live Chat Continuation not found.");
         console.log("['liveChatContinuation'] not found.")
         return 0;
     }
-    if(! live_chat['continuationContents']['liveChatContinuation']['actions']){
-        console.log("['actions'] not found.")
+    else if(! live_chat['continuationContents']['liveChatContinuation']['actions']){
+        console.log("['actions'] not found.");
+        // continuationキーを取得してリトライ
+        var continuation_key = await get_continuation(videoId);
+        console.log("continuation key: "+continuation_key);
+        setTimeout(()=>main(videoId, continuation_key), 5000);
         return 0;
     }
 
