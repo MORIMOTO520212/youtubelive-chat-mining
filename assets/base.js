@@ -208,19 +208,31 @@ function word_relevance(textlist){
             }
         });
     });
-    // エッジ線を引く
+    /* エッジ線を引く */
     let nodelst = nodes.map(obj=>[obj.id, obj.label]);    // 確保している単語リスト
     relevance_words.forEach(rlv => {
-        // ２つの関係単語を１つずつ取り出してnodesに含まれているかを調べる
-        let tf = rlv.word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
-        // 関係単語がどちらもtrueだった場合
-        if(tf.every(indexOf=> 0 <= indexOf)){
-            console.log(nodelst[tf[0]], nodelst[tf[1]]);
+        // ２つの関係単語のカウントが６以上であれば
+        if(6 <= rlv.count){
+            // ２つの関係単語を１つずつ取り出してnodesに含まれているかを調べる
+            let tf = rlv.word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
+            // 関係単語がどちらもtrueだった場合
+            if(tf.every(indexOf=> 0 <= indexOf)){
+                console.log(nodelst[tf[0]], nodelst[tf[1]]);
+                // edgesに既に含まれているか調べる
+                let res = edges.filter(obj => {
+                    return (obj.from == nodelst[tf[0]][0]) && (obj.to == nodelst[tf[1]][0]);
+                });
+                // edgesに含まれていなければ新規追加する
+                if(!res){
+                    edges.update([{
+                        from: nodelst[tf[0]][0], 
+                        to:   nodelst[tf[1]][0]
+                    }]);
+                }
+            }
         }
     });
-            //nodes.update([{}]); // ノード更新
-
-
+    // nodes.update([{}]); // ノード更新
 }
 
 
@@ -356,9 +368,11 @@ var container = document.getElementById('mynetwork');
     ]);
 */
 var nodes = new vis.DataSet();
+var edges = new vis.DataSet();
 
 var data = {
-    nodes: nodes
+    nodes: nodes,
+    edges: edges
 };
 var options = {
     autoResize: true,
