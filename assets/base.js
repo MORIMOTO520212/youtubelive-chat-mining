@@ -209,11 +209,10 @@ function word_relevance(textlist){
         });
     });
     // エッジ線を引く
-    let words = relevance_words.map(obj=> obj.word); // [['単語1', '単語2']...]
     let nodelst = nodes.map(obj=>[obj.id, obj.label]);    // 確保している単語リスト
-    words.forEach(word => {
+    relevance_words.forEach(rlv => {
         // ２つの関係単語を１つずつ取り出してnodesに含まれているかを調べる
-        let tf = word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
+        let tf = rlv.word.map(obj => nodelst.map(n=>n[1]).indexOf(obj));
         // 関係単語がどちらもtrueだった場合
         if(tf.every(indexOf=> 0 <= indexOf)){
             console.log(nodelst[tf[0]], nodelst[tf[1]]);
