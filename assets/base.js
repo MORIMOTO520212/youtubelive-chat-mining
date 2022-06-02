@@ -380,7 +380,7 @@ var options = {
     nodes: {
         color: {
             background: "#ffffff00",
-            border: "#666666",
+            border: "#b7b7b7",
             highlight: {
                 background: "#ffffff00",
                 border: "#ffffff00"
