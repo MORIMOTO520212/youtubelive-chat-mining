@@ -134,8 +134,10 @@ var id_queue_limit = 100;
 var node_words = [];
 
 /*
-    時間順に並び替えし50個の配列にする
-    単語の時間は取得するごとに自動的に更新される
+    引数：
+    sortType　並び替えのタイプを指定する
+        "time" 時間順に並び替えし50個の配列にする
+        "count" カウント数順に並び替えし50個の配列にする
 */
 function sort_words(sortType) {
     if("time" == sortType){
@@ -156,13 +158,12 @@ function sort_words(sortType) {
     return node_words.slice(0, node_words_limit);
 }
 
-/*
-    単語の関連性からノードにエッジ線を引く
-    word_relevance(['text1', 'text2'...])
-    引数：textlist [text1, text2...]
 
+
+/*
+    ["単語1", "単語2"]の配列の、単語2に関連する単語を取り出す場合、
+    単語1を取り出す。
 */
-var relevance_words = []; // [{word: ['単語1', '単語2'], count: 1}...]
 function choose(text, type){
     if(type=="front"){
         if(text.length){
@@ -176,6 +177,26 @@ function choose(text, type){
     }
     return false;
 }
+
+/*
+    relevance_words配列の要素数をnode_words_limitに制限する
+*/
+function relevance_slice(rlvwords){
+    console.log(rlvwords.length-node_words_limit, rlvwords.length-1)
+    if(rlvwords.length > node_words_limit){
+        return rlvwords.slice(rlvwords.length-node_words_limit, rlvwords.length-1);
+    }else{
+        return rlvwords;
+    }
+}
+
+/*
+    単語の関連性からノードにエッジ線を引く
+    word_relevance(['text1', 'text2'...])
+    引数：textlist [text1, text2...]
+
+*/
+var relevance_words = []; // [{word: ['単語1', '単語2'], count: 1}...]
 function word_relevance(textlist){
     // 前後の単語を見つける
     let labels = nodes.map(obj=>obj.label);
@@ -231,7 +252,8 @@ function word_relevance(textlist){
             }
         }
     });
-    // nodes.update([{}]); // ノード更新
+    // 要素の制限
+    relevance_words = relevance_slice(relevance_words)
 }
 
 
@@ -248,12 +270,15 @@ async function main(videoId, continuation_key) {
 
     /* エラーチェック */
     if(live_chat['error']){
-        alert(live_chat);
-        console.log(live_chat)
+        if(live_chat['error']['code'] == 400){
+            alert("ライブ配信が終了しました。");
+        }else{
+            console.log(live_chat);
+        }
         return 0;
     }
     else if(live_chat['errno'] == "ETIMEDOUT"){
-        alert("ETIMEDOUT");
+        console.log("ETIMEDOUT");
         // continuationキーを取得してリトライ
         var continuation_key = await get_continuation(videoId);
         console.log("continuation key: "+continuation_key);
@@ -341,15 +366,19 @@ async function main(videoId, continuation_key) {
     setTimeout(()=>main(videoId, continuation_key), timeoutMs);
 }
 
-/* メイン処理 */
+/* メイン処理
 (async()=>{
     var continuation_key = await get_continuation(videoId);
     console.log("continuation key: "+continuation_key);
     main(videoId, continuation_key);
-})();
+})(); */
 
 
-// create a network
+/* * * * * * * * * * * * * * * * * * * * * * * * * 
+
+                    Vis.js Network
+
+ * * * * * * * * * * * *  * * * * * * * * * * * */
 var container = document.getElementById('mynetwork');
 /*
     create an array with nodes
@@ -380,7 +409,7 @@ var options = {
     nodes: {
         color: {
             background: "#ffffff00",
-            border: "#b7b7b7",
+            border: "#ffffff00",
             highlight: {
                 background: "#ffffff00",
                 border: "#ffffff00"
@@ -388,9 +417,9 @@ var options = {
         },
     },
     edges: {
-        background: {
-            enabled: true,
-            color: "#000",
+        color: {
+            color: "#ff1493",
+            highlight: "#ff1493",
         }
     },
     physics: {

@@ -1,15 +1,38 @@
 <html>
     <head>
-        <title>wordcloud for YouTube Live</title>
+        <title>WordCloud for YouTube Live</title>
         <meta charset="utf-8"/>
         <link rel="stylesheet" href="assets/style.css"/>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
+        <div class="top" id="div_top">
+            <h1 class="title">WordCloud for YouTube Live</h1>
+            <div class="input">
+                <input type="text" id="ytlink" />
+                <button type="button" id="run_button">実行する</button>
+            </div>
+            <div class="settings">
+                <div>
+                    <p>表示するノード数</p>
+                    <div style="display:flex;">
+                        <input type="range" id="range_node" min="5" max="200" value="50">
+                        <p id="range_node_value">50</p>
+                    </div>
+                </div>
+                <div>
+                    <p>記憶する単語の数（表示ノード数より多くする必要があります）</p>
+                    <div style="display:flex;">
+                        <input type="range" id="range_word" min="100" max="999" value="100">
+                        <p id="range_word_value">100</p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="mynetwork"></div>
         <script>
             /* 動画ID */
-            var videoId = "yUaBQYo3Sn8";
+            var videoId = "7Rbc_EAqN2c";
             /* 表示ノード数 */
             var node_limit = 50;
             /* 1回のテキスト処理数 */
@@ -23,5 +46,6 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
         <script type="text/javascript" src="kuromoji.js"></script>
         <script type="text/javascript" src="assets/base.js"></script>
+        <script type="text/javascript" src="assets/effect.js"></script>
     </body>
 </html>
