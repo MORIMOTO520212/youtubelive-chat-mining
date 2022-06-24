@@ -9,7 +9,7 @@
         <div class="top" id="div_top">
             <h1 class="title">WordCloud for YouTube Live</h1>
             <div class="input">
-                <input type="text" id="ytlink" />
+                <input type="text" id="ytlink" placeholder="ライブ配信のリンク" />
                 <button type="button" id="run_button">実行する</button>
             </div>
             <div class="settings">
@@ -29,7 +29,17 @@
                 </div>
             </div>
         </div>
-        <div id="mynetwork"></div>
+        <div class="main">
+            <div id="mynetwork"></div>
+            <div class="onplay">
+                <div class="video">
+                    <iframe id="youtube" width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="chat">
+                    <iframe id="chatform" src=""></iframe>
+                </div>
+            </div>
+        </div>
         <script>
             /* 動画ID */
             var videoId = "7Rbc_EAqN2c";

@@ -4,13 +4,15 @@
  * * * *  * * * *  * * * *  * * * */
 
 var xhr = new XMLHttpRequest();
-/* APIサーバーポート */
+/* API */
+//var host = "localhost";
+var host = "xsusa.xyz";
 var server_port = 3000;
 var live_chat;
 
 function get_continuation(videoId){
     return new Promise((resolve, reject) => {
-        xhr.open('GET', `http://localhost:${server_port}/continuation?id=${videoId}`);
+        xhr.open('GET', `http://${host}:${server_port}/continuation?id=${videoId}`);
         xhr.send();
         xhr.onreadystatechange = () => {
             if(xhr.readyState == 4 && xhr.status == 200){
@@ -23,7 +25,7 @@ function get_continuation(videoId){
 
 function get_chat(videoId, continuation_key){
     return new Promise((resolve, reject) => {
-        xhr.open('GET', `http://localhost:${server_port}/chat?id=${videoId}&continuation=${continuation_key}`);
+        xhr.open('GET', `http://${host}:${server_port}/chat?id=${videoId}&continuation=${continuation_key}`);
         xhr.send();
         xhr.onreadystatechange = () => {
             if(xhr.readyState == 4 && xhr.status == 200){
