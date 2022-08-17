@@ -1,27 +1,32 @@
-# YouTube Live Chat Mining
-## YouTubeライブのチャットを解析
+# Wordcloud for YouTube Live
+## Analyze YouTube live chat
 
-### 特長
+## Feature
 ・単語をいつまで記憶しておくかを考慮する  
 ・古い単語は表示しない  
 ・ワードクラウドの散らばり具合を調整する  
 ・関連する単語同士を線を引いて表す  
 
+## Word-to-word association
+「誕生」と「おめでとう」の単語は互いに関連性があり、このように線で引かれる。
+
+<img width="500" src="https://github.com/MORIMOTO520212/youtubelive-chat-mining/blob/master/関連単語の検出.png?raw=true">
+
 ### TODO
 ・言語フィルター
 
 ## get_chat.js
-### continuationキーを取得する
+### Get Continuation key
 ```bash
 GET "http://localhost:3000/continuation?id=<video Id>"
 ```
 
-### チャット情報を取得する
+### Get chat information
 ```bash
 GET "http://localhost:3000/chat?id=<video Id>&continuation=<continuation key>"
 ```
 
-## 変数情報
+## Variable description
 **node_words**  
 node_wordsには取得した単語が500個格納されている。
 その中から、ノードの表示は時間順に指定数表示される。
@@ -37,7 +42,7 @@ var node_words = [
 ];
 ```
 
-## 除外文字
+## Excluded characters
 意味の持たない文字はワードクラウドに表示しない。
 ```js
 var exception_words = [
