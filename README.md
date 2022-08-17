@@ -10,7 +10,7 @@
 ## Word-to-word association
 「誕生」と「おめでとう」の単語は互いに関連性があり、このように線で引かれる。
 
-<img width="500" src="https://github.com/MORIMOTO520212/youtubelive-chat-mining/blob/master/関連単語の検出.png?raw=true">
+<img width="500" src="https://github.com/MORIMOTO520212/youtubelive-chat-mining/blob/master/album/関連単語の検出.png?raw=true">
 
 ### TODO
 ・言語フィルター
