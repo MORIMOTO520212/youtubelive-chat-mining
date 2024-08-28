@@ -6,7 +6,7 @@
 var xhr = new XMLHttpRequest();
 /* API */
 //var host = "localhost";
-var host = "xsusa.xyz";
+var host = "localhost";
 var server_port = 3000;
 var live_chat;
 
@@ -54,6 +54,7 @@ function generate_color(){
 /* kuromoji.js 初期化 */
 var builder = kuromoji.builder({ dicPath: "dict" });
 var tokenizer;
+console.log(builder);
 builder.build((err, _tokenizer) => {
     if(err) {
         reject(err);

@@ -1,61 +1,83 @@
 <html>
-    <head>
-        <title>WordCloud for YouTube Live</title>
-        <meta charset="utf-8"/>
-        <link rel="stylesheet" href="assets/style.css"/>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body>
-        <div class="top" id="div_top">
-            <h1 class="title">WordCloud for YouTube Live</h1>
-            <div class="input">
-                <input type="text" id="ytlink" placeholder="ライブ配信のリンク" />
-                <button type="button" id="run_button">実行する</button>
-            </div>
-            <div class="settings">
-                <div>
-                    <p>表示するノード数</p>
-                    <div style="display:flex;">
-                        <input type="range" id="range_node" min="5" max="200" value="50">
-                        <p id="range_node_value">50</p>
-                    </div>
-                </div>
-                <div>
-                    <p>記憶する単語の数（表示ノード数より多くする必要があります）</p>
-                    <div style="display:flex;">
-                        <input type="range" id="range_word" min="100" max="999" value="100">
-                        <p id="range_word_value">100</p>
-                    </div>
-                </div>
-            </div>
+  <head>
+    <title>WordCloud for YouTube Live</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+  </head>
+  <body>
+    <div class="top" id="div_top">
+      <h1 class="title">WordCloud for YouTube Live</h1>
+      <div class="input">
+        <input type="text" id="ytlink" placeholder="ライブ配信のリンク" />
+        <button type="button" id="run_button">実行する</button>
+      </div>
+      <div class="settings">
+        <div>
+          <p>表示するノード数</p>
+          <div style="display: flex">
+            <input type="range" id="range_node" min="5" max="200" value="50" />
+            <p id="range_node_value">50</p>
+          </div>
         </div>
-        <div class="main">
-            <div id="mynetwork"></div>
-            <div class="onplay">
-                <div class="video">
-                    <iframe id="youtube" width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-                <div class="chat">
-                    <iframe id="chatform" src=""></iframe>
-                </div>
-            </div>
+        <div>
+          <p>記憶する単語の数（表示ノード数より多くする必要があります）</p>
+          <div style="display: flex">
+            <input
+              type="range"
+              id="range_word"
+              min="100"
+              max="999"
+              value="500"
+            />
+            <p id="range_word_value">100</p>
+          </div>
         </div>
-        <script>
-            /* 動画ID */
-            var videoId = "7Rbc_EAqN2c";
-            /* 表示ノード数 */
-            var node_limit = 50;
-            /* 1回のテキスト処理数 */
-            var text_limit = 70;
-            /*
-                ローカルに確保するワード数
-                数値によってワードクラウドに影響する
-            */
-            var node_words_limit = 100;
-        </script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
-        <script type="text/javascript" src="kuromoji.js"></script>
-        <script type="text/javascript" src="assets/base.js"></script>
-        <script type="text/javascript" src="assets/effect.js"></script>
-    </body>
+      </div>
+    </div>
+    <div class="main">
+      <div id="mynetwork"></div>
+      <div class="onplay">
+        <div class="video">
+          <iframe
+            id="youtube"
+            width="560"
+            height="315"
+            src=""
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="chat">
+          <iframe id="chatform" src=""></iframe>
+        </div>
+      </div>
+    </div>
+    <script>
+      /* 動画ID */
+      var videoId = "7Rbc_EAqN2c";
+      /* 表示ノード数 */
+      var node_limit = 200;
+      /* 1回のテキスト処理数 */
+      var text_limit = 70;
+      /*
+          ローカルに確保するワード数
+          数値によってワードクラウドに影響する
+      */
+      var node_words_limit = 500;
+    </script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"
+    ></script>
+    <script type="text/javascript" src="kuromoji.js"></script>
+    <script type="text/javascript" src="assets/effect.js"></script>
+    <script type="text/javascript" src="assets/base.js"></script>
+  </body>
 </html>
